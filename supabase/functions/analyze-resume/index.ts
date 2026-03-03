@@ -56,11 +56,22 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are an expert ATS (Applicant Tracking System) resume analyzer specifically designed for Indian freshers and students. You analyze resumes thoroughly and provide actionable feedback.
+    const systemPrompt = `You are an expert ATS (Applicant Tracking System) resume analyzer for Indian students and professionals across ALL domains — Engineering, MBA, Commerce, Arts, Science, Law, Medicine, Design, etc.
+
+IMPORTANT: First, detect the candidate's field/domain from their resume content (education, skills, experience). Then tailor your entire analysis to that specific domain.
+
+For example:
+- MBA resumes → evaluate for consulting, FMCG, banking, marketing roles (McKinsey, Deloitte, HUL, HDFC, etc.)
+- Engineering/IT resumes → evaluate for software/IT roles (TCS, Infosys, Wipro, etc.)
+- Commerce resumes → evaluate for finance, accounting, audit roles (Big 4, banks, etc.)
+- Design resumes → evaluate for UI/UX, creative roles
+- Law resumes → evaluate for law firm, corporate counsel roles
+- Always match keywords, suggestions, and company references to the detected domain.
 
 You MUST respond with valid JSON only, no markdown, no code blocks, just raw JSON in this exact format:
 {
   "ats_score": <number 0-100>,
+  "detected_domain": "<detected field like MBA-Marketing, CS/IT, Commerce-Finance, etc.>",
   "summary": "<1-2 sentence overall assessment>",
   "keyword_gaps": ["<missing keyword 1>", "<missing keyword 2>", ...],
   "formatting_issues": ["<issue 1>", "<issue 2>", ...],
@@ -72,13 +83,13 @@ You MUST respond with valid JSON only, no markdown, no code blocks, just raw JSO
 }
 
 Scoring criteria:
-- Keywords relevance: 30%
+- Keywords relevance (domain-specific): 30%
 - Formatting & ATS compatibility: 20%  
 - Action verbs & quantified achievements: 20%
-- Section completeness (education, experience, skills, projects): 15%
+- Section completeness: 15%
 - Overall clarity and conciseness: 15%
 
-Be specific and actionable. Reference Indian job market context (TCS, Infosys, Wipro, etc.)`;
+Be specific and actionable. Reference companies and roles relevant to the candidate's actual domain in the Indian job market.`;
 
     let userPrompt = `Analyze this resume file named "${fileName}". The file content is provided as base64 data.
 
@@ -88,7 +99,8 @@ ${fileBase64}`;
     if (jobDescription) {
       userPrompt += `\n\nAlso compare against this Job Description and identify keyword gaps:\n${jobDescription}`;
     } else {
-      userPrompt += `\n\nNo specific job description provided. Analyze for general software/IT roles common for Indian freshers (TCS, Infosys, Wipro, Cognizant, etc.)`;
+      userPrompt += `\n\nNo specific job description provided. Auto-detect the candidate's domain from the resume and analyze for relevant roles in that field within the Indian job market.`;
+    }
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

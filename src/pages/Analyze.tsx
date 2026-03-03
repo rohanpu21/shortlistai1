@@ -13,6 +13,7 @@ import ResumePDF, { type ResumeData } from "@/components/ResumePDF";
 
 interface AnalysisResult {
   ats_score: number;
+  detected_domain?: string;
   summary: string;
   keyword_gaps: string[];
   formatting_issues: string[];
@@ -95,6 +96,11 @@ const AnalysisReport = ({
     {/* Score */}
     <div className="bg-card rounded-2xl border border-border p-8 flex flex-col items-center">
       <SpeedometerGauge score={result.ats_score} />
+      {result.detected_domain && (
+        <span className="mt-3 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+          Domain: {result.detected_domain}
+        </span>
+      )}
       <p className="text-sm text-muted-foreground mt-4 text-center max-w-md">{result.summary}</p>
     </div>
 
