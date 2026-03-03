@@ -24,7 +24,7 @@ const Footer = () => (
       </div>
 
       <p className="text-center text-xs text-muted-foreground mt-8">
-        © 2025 ShortlistAI. Built for the Next Generation of Indian Engineers.
+        © {new Date().getFullYear()} ShortlistAI. Built for the Next Generation of Indian Engineers.
       </p>
     </div>
   </footer>

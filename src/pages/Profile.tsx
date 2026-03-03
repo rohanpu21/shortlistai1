@@ -116,7 +116,7 @@ const Profile = () => {
               <div
                 key={r.id}
                 className="bg-card rounded-xl border border-border p-4 flex items-center justify-between hover:shadow-sm transition-shadow cursor-pointer"
-                onClick={() => navigate(`/analyze?report=${r.id}`)}
+                onClick={() => {/* TODO: view past report */}}
               >
                 <div className="flex items-center gap-3">
                   <FileText className="h-5 w-5 text-primary" />

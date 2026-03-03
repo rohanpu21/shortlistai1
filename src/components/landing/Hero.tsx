@@ -22,12 +22,15 @@ const Hero = () => {
               <Button size="lg" className="rounded-full px-8 font-semibold text-base gap-2" onClick={() => navigate("/analyze")}>
                 Analyze My Resume Now <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" className="rounded-full px-8 font-semibold text-base" onClick={() => navigate("/analyze")}>
-                View Sample Report
+              <Button size="lg" variant="outline" className="rounded-full px-8 font-semibold text-base" onClick={() => {
+                const el = document.querySelector("#how-it-works");
+                el?.scrollIntoView({ behavior: "smooth" });
+              }}>
+                See How It Works
               </Button>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              No signup required for your first scan. Free forever.
+              Free to sign up. Your first ATS scan is on us.
             </p>
           </div>
 
