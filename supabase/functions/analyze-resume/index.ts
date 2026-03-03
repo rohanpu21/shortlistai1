@@ -101,7 +101,6 @@ ${fileBase64}`;
     } else {
       userPrompt += `\n\nNo specific job description provided. Auto-detect the candidate's domain from the resume and analyze for relevant roles in that field within the Indian job market.`;
     }
-    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
