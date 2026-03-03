@@ -3,16 +3,16 @@ import { FileText, CheckCircle, XCircle, ArrowRight } from "lucide-react";
 
 const Hero = () => {
   return (
-    <section className="relative pt-28 pb-20 md:pt-36 md:pb-28 bg-grid overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative pt-28 pb-20 md:pt-40 md:pb-32 bg-grid hero-glow overflow-hidden">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left – Copy */}
           <div className="max-w-xl">
-            <h1 className="text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold leading-tight text-foreground tracking-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.1] text-foreground tracking-tight">
               Get Shortlisted for Your Dream Job{" "}
               <span className="text-primary">Without the 100+ Rejection Emails.</span>
             </h1>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
+            <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed">
               The only ATS analyzer built for Indian freshers. Upload your resume, paste
               the JD, and get a recruiter-ready score in 60 seconds.
             </p>
@@ -28,12 +28,15 @@ const Hero = () => {
                 View Sample Report
               </Button>
             </div>
+            <p className="mt-4 text-sm text-muted-foreground">
+              No signup required. Free forever for your first scan.
+            </p>
           </div>
 
           {/* Right – Visual Mockup */}
           <div className="relative flex gap-4 justify-center lg:justify-end">
             {/* Bad resume card */}
-            <div className="w-52 rounded-2xl border-2 border-destructive/30 bg-card p-5 shadow-lg -rotate-3 relative">
+            <div className="w-52 rounded-2xl border-2 border-destructive/30 bg-card p-5 shadow-lg animate-float relative">
               <div className="flex items-center gap-2 mb-3">
                 <XCircle className="h-5 w-5 text-destructive" />
                 <span className="text-xs font-bold text-destructive uppercase tracking-wide">Before</span>
@@ -55,7 +58,7 @@ const Hero = () => {
             </div>
 
             {/* Good report card */}
-            <div className="w-52 rounded-2xl border-2 border-accent/30 bg-card p-5 shadow-lg rotate-2 relative">
+            <div className="w-52 rounded-2xl border-2 border-accent/30 bg-card p-5 shadow-lg animate-float-reverse relative">
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle className="h-5 w-5 text-accent" />
                 <span className="text-xs font-bold text-accent uppercase tracking-wide">After</span>

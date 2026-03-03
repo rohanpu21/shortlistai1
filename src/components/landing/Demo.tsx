@@ -1,48 +1,51 @@
 import { Play, Zap, Layout, BarChart3 } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const features = [
-  { icon: Zap, text: "Real-time keyword matching" },
-  { icon: Layout, text: "Formatting check (columns/tables)" },
-  { icon: BarChart3, text: "Experience relevance scoring" },
+  { icon: Zap, title: "Real-time keyword matching", desc: "Instantly identifies missing keywords from the job description." },
+  { icon: Layout, title: "Formatting check", desc: "Detects columns, tables, and other ATS-breaking layouts." },
+  { icon: BarChart3, title: "Experience relevance scoring", desc: "Rates how well your experience matches the role requirements." },
 ];
 
-const Demo = () => (
-  <section className="py-20 bg-card">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 className="text-3xl md:text-4xl font-extrabold text-center text-foreground mb-4">
-        See It in Action
-      </h2>
-      <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto">
-        Watch a 90-second walkthrough of the full analysis flow.
-      </p>
+const Demo = () => {
+  const ref = useScrollAnimation();
 
-      <div className="grid lg:grid-cols-2 gap-10 items-center max-w-5xl mx-auto">
-        {/* Video placeholder */}
-        <div className="aspect-video rounded-2xl bg-muted border border-border flex items-center justify-center cursor-pointer hover:bg-muted/80 transition-colors group">
-          <div className="h-16 w-16 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors">
-            <Play className="h-7 w-7 text-primary ml-1" />
+  return (
+    <section className="py-24 bg-card">
+      <div ref={ref} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
+          See It in Action
+        </h2>
+        <p className="text-center text-muted-foreground mb-14 max-w-md mx-auto">
+          Watch a 90-second walkthrough of the full analysis flow.
+        </p>
+
+        <div className="grid lg:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
+          {/* Video placeholder */}
+          <div className="aspect-video rounded-2xl bg-muted border border-border flex items-center justify-center cursor-pointer hover:bg-muted/80 transition-colors group">
+            <div className="h-20 w-20 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors animate-pulse-glow">
+              <Play className="h-8 w-8 text-primary ml-1" />
+            </div>
+          </div>
+
+          {/* Feature bullets */}
+          <div className="space-y-8">
+            {features.map((f) => (
+              <div key={f.title} className="flex items-start gap-4">
+                <div className="h-11 w-11 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <f.icon className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">{f.title}</p>
+                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{f.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* Feature bullets */}
-        <div className="space-y-6">
-          {features.map((f) => (
-            <div key={f.text} className="flex items-start gap-4">
-              <div className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center">
-                <f.icon className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="font-semibold text-foreground">{f.text}</p>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Powered by AI that understands Indian hiring patterns.
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default Demo;
