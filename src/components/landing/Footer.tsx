@@ -1,10 +1,11 @@
 import { Instagram, Linkedin } from "lucide-react";
+import logo from "@/assets/logo.jpeg";
 
 const Footer = () => (
   <footer className="py-10 border-t border-border bg-background">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-        <p className="text-sm font-bold text-foreground">ShortlistAI</p>
+        <img src={logo} alt="ShortlistAI" className="h-7" />
 
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
           <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
