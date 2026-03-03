@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/logo.jpeg";
 import { Menu, X } from "lucide-react";
 
 const navLinks = [
@@ -36,8 +35,8 @@ const Navbar = () => {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <a href="#" className="flex items-center gap-2">
-            <img src={logo} alt="ShortlistAI" className="h-8" />
+          <a href="#" className="text-xl font-extrabold text-primary tracking-tight">
+            ShortlistAI
           </a>
 
           {/* Desktop links */}
