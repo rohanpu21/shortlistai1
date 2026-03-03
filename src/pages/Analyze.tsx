@@ -200,11 +200,16 @@ const Analyze = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
-    if (f && (f.type === "application/pdf" || f.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
-      setFile(f);
-    } else {
+    if (!f) return;
+    if (f.type !== "application/pdf" && f.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
       toast({ title: "Invalid file", description: "Please upload a PDF or DOCX file.", variant: "destructive" });
+      return;
     }
+    if (f.size > 20 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Maximum file size is 20MB.", variant: "destructive" });
+      return;
+    }
+    setFile(f);
   };
 
   const readFileAsBase64 = (f: File): Promise<string> =>

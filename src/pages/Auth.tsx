@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,15 @@ const Auth = () => {
   const { toast } = useToast();
   const [isLogin, setIsLogin] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) navigate("/analyze", { replace: true });
+    };
+    checkUser();
+  }, [navigate]);
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -29,6 +38,35 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // Client-side validation for signup
+    if (!isLogin) {
+      if (form.name.trim().length < 2 || form.name.trim().length > 100) {
+        toast({ title: "Invalid name", description: "Name must be 2-100 characters.", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+      if (!/^[6-9]\d{9}$/.test(form.mobile.trim())) {
+        toast({ title: "Invalid mobile", description: "Enter a valid 10-digit Indian mobile number.", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+      if (form.college.trim().length < 2) {
+        toast({ title: "Invalid college", description: "Please enter your college name.", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+      if (!form.year) {
+        toast({ title: "Select year", description: "Please select your academic year.", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+      if (form.branch.trim().length < 2) {
+        toast({ title: "Invalid branch", description: "Please enter your branch.", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+    }
 
     try {
       if (isLogin) {
