@@ -9,6 +9,20 @@ import Pricing from "@/components/landing/Pricing";
 import FAQ from "@/components/landing/FAQ";
 import FinalCTA from "@/components/landing/FinalCTA";
 import Footer from "@/components/landing/Footer";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+
+const InlineCTA = ({ text = "Analyze My Resume Now" }: { text?: string }) => (
+  <div className="py-10 text-center bg-background">
+    <Button
+      size="lg"
+      className="rounded-full px-8 font-semibold text-base gap-2"
+      onClick={() => document.querySelector("#pricing")?.scrollIntoView({ behavior: "smooth" })}
+    >
+      {text} <ArrowRight className="h-4 w-4" />
+    </Button>
+  </div>
+);
 
 const Index = () => {
   return (
@@ -18,9 +32,11 @@ const Index = () => {
         <Hero />
         <SocialProof />
         <ProblemSolution />
+        <InlineCTA />
         <Benefits />
         <HowItWorks />
         <Demo />
+        <InlineCTA text="Check ATS Score Free" />
         <Pricing />
         <FAQ />
         <FinalCTA />

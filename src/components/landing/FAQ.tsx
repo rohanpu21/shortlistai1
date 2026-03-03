@@ -4,6 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const faqs = [
   {
@@ -24,30 +25,41 @@ const faqs = [
   },
 ];
 
-const FAQ = () => (
-  <section id="faq" className="py-20 bg-card">
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 className="text-3xl md:text-4xl font-extrabold text-center text-foreground mb-4">
-        Frequently Asked Questions
-      </h2>
-      <p className="text-center text-muted-foreground mb-10">
-        Got questions? We've got answers.
-      </p>
+const FAQ = () => {
+  const ref = useScrollAnimation();
 
-      <Accordion type="single" collapsible className="w-full">
-        {faqs.map((faq, i) => (
-          <AccordionItem key={i} value={`faq-${i}`}>
-            <AccordionTrigger className="text-left text-foreground font-semibold">
-              {faq.q}
-            </AccordionTrigger>
-            <AccordionContent className="text-muted-foreground leading-relaxed">
-              {faq.a}
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
-    </div>
-  </section>
-);
+  return (
+    <section id="faq" className="py-24 bg-card">
+      <div ref={ref} className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
+          Frequently Asked Questions
+        </h2>
+        <p className="text-center text-muted-foreground mb-12">
+          Got questions? We've got answers.
+        </p>
+
+        <Accordion type="single" collapsible className="w-full">
+          {faqs.map((faq, i) => (
+            <AccordionItem key={i} value={`faq-${i}`}>
+              <AccordionTrigger className="text-left text-foreground font-semibold">
+                {faq.q}
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground leading-relaxed">
+                {faq.a}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+
+        <p className="text-center text-sm text-muted-foreground mt-8">
+          Still have questions?{" "}
+          <a href="mailto:support@shortlistai.in" className="text-primary font-semibold hover:underline">
+            Contact us
+          </a>
+        </p>
+      </div>
+    </section>
+  );
+};
 
 export default FAQ;
