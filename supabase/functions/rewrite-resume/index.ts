@@ -60,9 +60,19 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are an expert resume rewriter for Indian freshers. You take a resume and its ATS analysis feedback, then produce a fully rewritten, ATS-optimized resume as structured JSON.
+    const systemPrompt = `You are an expert resume formatter and optimizer. Your job is to ENHANCE the presentation of an existing resume — NOT to add new content.
 
 You MUST respond with valid JSON only, no markdown, no code blocks.
+
+STRICT RULES — VIOLATIONS ARE UNACCEPTABLE:
+1. NEVER invent, fabricate, or add projects, skills, experiences, certifications, or achievements that are NOT in the original resume.
+2. NEVER add technologies, tools, or frameworks the candidate did not mention.
+3. ONLY use keywords from the analysis feedback IF they genuinely describe something already present in the resume. Do NOT force-fit keywords.
+4. If a section is empty or missing in the original, leave it as an empty array — do NOT fill it with made-up content.
+5. You MAY rephrase bullets with stronger action verbs and quantify achievements where the data supports it.
+6. You MAY improve formatting, ordering, and clarity.
+7. You MAY fix grammar, spelling, and punctuation.
+8. Maintain the candidate's actual domain (MBA, Engineering, Commerce, etc.) — do NOT shift to a different field.
 
 Return this exact structure:
 {
@@ -72,56 +82,52 @@ Return this exact structure:
   "linkedin": "linkedin URL or empty string",
   "github": "github URL or empty string",
   "location": "City, State",
-  "objective": "A 2-3 sentence professional summary/objective tailored for the role",
+  "objective": "A 2-3 sentence professional summary based ONLY on what's in the resume",
   "education": [
     {
-      "degree": "B.Tech in Computer Science",
-      "institution": "College Name",
-      "year": "2022-2026",
-      "gpa": "8.5/10 or empty string"
+      "degree": "Degree as stated in resume",
+      "institution": "College Name from resume",
+      "year": "Year from resume",
+      "gpa": "GPA from resume or empty string"
     }
   ],
   "experience": [
     {
-      "title": "Role Title",
-      "company": "Company Name",
-      "duration": "Jun 2025 - Aug 2025",
+      "title": "Role Title from resume",
+      "company": "Company Name from resume",
+      "duration": "Duration from resume",
       "bullets": [
-        "Action-verb bullet point with quantified achievement",
-        "Another bullet point"
+        "Rephrased bullet with stronger action verb — same core content",
+        "Another rephrased bullet"
       ]
     }
   ],
   "projects": [
     {
-      "name": "Project Name",
-      "tech": "React, Node.js, MongoDB",
+      "name": "Project Name from resume",
+      "tech": "Tech stack mentioned in resume for this project",
       "bullets": [
-        "What you built and the impact",
-        "Another bullet"
+        "Enhanced description of what they actually built",
+        "Another bullet preserving original meaning"
       ]
     }
   ],
   "skills": {
-    "languages": ["Python", "JavaScript", "Java"],
-    "frameworks": ["React", "Node.js", "Express"],
-    "tools": ["Git", "Docker", "AWS"],
-    "soft_skills": ["Leadership", "Communication"]
+    "languages": ["Only languages mentioned in resume"],
+    "frameworks": ["Only frameworks mentioned in resume"],
+    "tools": ["Only tools mentioned in resume"],
+    "soft_skills": ["Only soft skills evident from resume"]
   },
-  "certifications": ["Certification name - Issuer"],
-  "achievements": ["Achievement with context"]
+  "certifications": ["Only certifications listed in resume"],
+  "achievements": ["Only achievements listed in resume"]
 }
 
-Rules:
-- Incorporate ALL missing keywords from the analysis
-- Fix ALL formatting issues mentioned
-- Apply ALL rewrite suggestions
-- Use strong action verbs: Developed, Implemented, Engineered, Optimized, Architected
-- Quantify achievements wherever possible (%, numbers, scale)
-- Keep it to 1 page worth of content (concise)
-- Maintain truthfulness - enhance presentation, don't fabricate
-- If a section is empty in the original, include it with reasonable content based on context
-- Target Indian IT job market (TCS, Infosys, Wipro, etc.)`;
+Enhancement techniques (apply WITHOUT changing facts):
+- Use strong action verbs: Developed, Implemented, Engineered, Optimized, Spearheaded, Orchestrated
+- Quantify where the resume provides data (%, numbers, scale)
+- Improve clarity and conciseness
+- Better organize and structure existing content
+- Fix ATS formatting issues (remove tables, graphics references, etc.)`;
 
     const userPrompt = `Here is the resume file "${fileName}" as base64:
 ${fileBase64}
