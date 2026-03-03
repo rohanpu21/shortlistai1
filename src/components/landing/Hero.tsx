@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { FileText, CheckCircle, XCircle, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative pt-28 pb-20 md:pt-40 md:pb-32 bg-grid hero-glow overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left – Copy */}
           <div className="max-w-xl">
             <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.1] text-foreground tracking-tight">
               Get Shortlisted for Your Dream Job{" "}
@@ -17,25 +19,20 @@ const Hero = () => {
               the JD, and get a recruiter-ready score in 60 seconds.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <Button size="lg" className="rounded-full px-8 font-semibold text-base gap-2">
+              <Button size="lg" className="rounded-full px-8 font-semibold text-base gap-2" onClick={() => navigate("/analyze")}>
                 Analyze My Resume Now <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-full px-8 font-semibold text-base"
-              >
+              <Button size="lg" variant="outline" className="rounded-full px-8 font-semibold text-base" onClick={() => navigate("/analyze")}>
                 View Sample Report
               </Button>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              No signup required. Free forever for your first scan.
+              No signup required for your first scan. Free forever.
             </p>
           </div>
 
           {/* Right – Visual Mockup */}
           <div className="relative flex gap-4 justify-center lg:justify-end">
-            {/* Bad resume card */}
             <div className="w-52 rounded-2xl border-2 border-destructive/30 bg-card p-5 shadow-lg animate-float relative">
               <div className="flex items-center gap-2 mb-3">
                 <XCircle className="h-5 w-5 text-destructive" />
@@ -57,7 +54,6 @@ const Hero = () => {
               </div>
             </div>
 
-            {/* Good report card */}
             <div className="w-52 rounded-2xl border-2 border-accent/30 bg-card p-5 shadow-lg animate-float-reverse relative">
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle className="h-5 w-5 text-accent" />
