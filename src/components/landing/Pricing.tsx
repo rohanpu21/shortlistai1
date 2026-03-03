@@ -2,13 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, ArrowRight } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { useNavigate } from "react-router-dom";
 
 const tiers = [
   {
     name: "Free",
     price: "₹0",
     description: "Try it out, no strings attached.",
-    features: ["Basic ATS Score", "Formatting Check"],
+    features: ["Basic ATS Score", "Formatting Check", "General Tips"],
     cta: "Start Free",
     highlighted: false,
   },
@@ -17,31 +18,21 @@ const tiers = [
     price: "₹99",
     description: "Best for Placement Season",
     features: [
-      "Full Keyword List",
+      "Full Keyword Analysis",
       "5 Bullet Point Rewrites",
       "ATS Optimized Template",
+      "Section-by-Section Feedback",
       "Everything in Free",
     ],
     cta: "Get Pro Access",
     highlighted: true,
-    badge: "Best for Placement Season",
-  },
-  {
-    name: "Elite",
-    price: "₹299",
-    description: "The full career toolkit.",
-    features: [
-      "Everything in Pro",
-      "LinkedIn Profile Audit",
-      "1-on-1 AI Interview Prep",
-    ],
-    cta: "Go Elite",
-    highlighted: false,
+    badge: "Most Popular",
   },
 ];
 
 const Pricing = () => {
   const ref = useScrollAnimation();
+  const navigate = useNavigate();
 
   return (
     <section id="pricing" className="py-24 bg-grid">
@@ -53,7 +44,7 @@ const Pricing = () => {
           First analysis is free. No subscriptions, no hidden fees.
         </p>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto items-start">
+        <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto items-start">
           {tiers.map((tier) => (
             <div
               key={tier.name}
@@ -89,6 +80,7 @@ const Pricing = () => {
                   tier.highlighted ? "" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                 }`}
                 variant={tier.highlighted ? "default" : "secondary"}
+                onClick={() => navigate("/analyze")}
               >
                 {tier.cta}
               </Button>
@@ -99,7 +91,7 @@ const Pricing = () => {
         <p className="text-center text-muted-foreground mt-10 text-sm">
           Still unsure?{" "}
           <button
-            onClick={() => document.querySelector("#faq")?.scrollIntoView({ behavior: "smooth" })}
+            onClick={() => navigate("/analyze")}
             className="text-primary font-semibold hover:underline"
           >
             Try it free first →

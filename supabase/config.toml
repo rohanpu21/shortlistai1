@@ -1,1 +1,4 @@
 project_id = "ydplyisjmuveuzkvrecr"
+
+[functions.analyze-resume]
+verify_jwt = false

@@ -1,4 +1,5 @@
 import { Instagram, Linkedin } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => (
   <footer className="py-10 border-t border-border bg-background">
@@ -7,9 +8,9 @@ const Footer = () => (
         <p className="text-sm font-bold text-foreground">ShortlistAI</p>
 
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
-          <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
-          <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
-          <a href="mailto:support@shortlistai.in" className="hover:text-foreground transition-colors">Contact</a>
+          <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+          <Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
+          <a href="tel:9337709699" className="hover:text-foreground transition-colors">Contact: 9337709699</a>
         </div>
 
         <div className="flex items-center gap-4">

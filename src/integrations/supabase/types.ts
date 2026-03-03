@@ -14,7 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          branch: string
+          college: string
+          created_at: string
+          email: string
+          id: string
+          mobile: string
+          name: string
+          updated_at: string
+          user_id: string
+          year: string
+        }
+        Insert: {
+          branch: string
+          college: string
+          created_at?: string
+          email: string
+          id?: string
+          mobile: string
+          name: string
+          updated_at?: string
+          user_id: string
+          year: string
+        }
+        Update: {
+          branch?: string
+          college?: string
+          created_at?: string
+          email?: string
+          id?: string
+          mobile?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+          year?: string
+        }
+        Relationships: []
+      }
+      resumes: {
+        Row: {
+          analysis: Json | null
+          ats_score: number | null
+          created_at: string
+          file_name: string
+          file_url: string
+          id: string
+          job_description: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis?: Json | null
+          ats_score?: number | null
+          created_at?: string
+          file_name: string
+          file_url: string
+          id?: string
+          job_description?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis?: Json | null
+          ats_score?: number | null
+          created_at?: string
+          file_name?: string
+          file_url?: string
+          id?: string
+          job_description?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

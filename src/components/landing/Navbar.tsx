@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { label: "How it Works", href: "#how-it-works" },
@@ -12,6 +14,8 @@ const navLinks = [
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -35,11 +39,10 @@ const Navbar = () => {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <a href="#" className="text-xl font-extrabold text-primary tracking-tight">
+          <a href="/" className="text-xl font-extrabold text-primary tracking-tight">
             ShortlistAI
           </a>
 
-          {/* Desktop links */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <button
@@ -52,16 +55,20 @@ const Navbar = () => {
             ))}
           </div>
 
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-3">
+            {user && (
+              <Button variant="ghost" size="sm" onClick={() => navigate("/profile")} className="gap-2">
+                <User className="h-4 w-4" /> Profile
+              </Button>
+            )}
             <Button
-              onClick={() => scrollTo("#pricing")}
+              onClick={() => navigate("/analyze")}
               className="rounded-full px-6 font-semibold"
             >
               Check ATS Score Free
             </Button>
           </div>
 
-          {/* Mobile hamburger */}
           <button
             className="md:hidden p-2 text-foreground"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -71,7 +78,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border px-4 pb-4">
           {navLinks.map((link) => (
@@ -83,8 +89,16 @@ const Navbar = () => {
               {link.label}
             </button>
           ))}
+          {user && (
+            <button
+              onClick={() => { setMobileOpen(false); navigate("/profile"); }}
+              className="block w-full text-left py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              My Profile
+            </button>
+          )}
           <Button
-            onClick={() => scrollTo("#pricing")}
+            onClick={() => { setMobileOpen(false); navigate("/analyze"); }}
             className="rounded-full w-full mt-2 font-semibold"
           >
             Check ATS Score Free
