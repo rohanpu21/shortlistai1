@@ -112,7 +112,7 @@ const AnalysisReport = ({
       </div>
       <Button onClick={onRewrite} disabled={rewriting} className="rounded-full font-semibold gap-2 whitespace-nowrap" size="lg">
         {rewriting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wand2 className="h-5 w-5" />}
-        {rewriting ? "Rewriting..." : "Fix & Download Resume"}
+        {rewriting ? "Rewriting..." : "Fix & Download — ₹99"}
       </Button>
     </div>
 
@@ -262,7 +262,7 @@ const Analyze = () => {
     }
   };
 
-  const handleRewrite = useCallback(async () => {
+  const doRewrite = useCallback(async () => {
     if (!file || !result) return;
     setRewriting(true);
 
@@ -276,7 +276,6 @@ const Analyze = () => {
 
       const resumeData: ResumeData = data.resumeData;
 
-      // Generate PDF blob in the browser
       const blob = await pdf(<ResumePDF data={resumeData} />).toBlob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -294,6 +293,56 @@ const Analyze = () => {
       setRewriting(false);
     }
   }, [file, fileBase64, result, toast]);
+
+  const handleRewrite = useCallback(async () => {
+    if (!file || !result || !user) return;
+
+    try {
+      // Step 1: Create Razorpay order via edge function
+      const { data: orderData, error: orderError } = await supabase.functions.invoke("create-razorpay-order", {
+        body: { amount: 9900, currency: "INR", receipt: `rcpt_${user.id}_${Date.now()}` },
+      });
+      if (orderError) throw orderError;
+
+      const { order_id, key_id, amount, currency } = orderData;
+
+      // Step 2: Open Razorpay checkout
+      const options = {
+        key: key_id,
+        amount,
+        currency,
+        name: "ShortlistAI",
+        description: "ATS-Optimized Resume – Fix & Download",
+        order_id,
+        handler: async (response: any) => {
+          // Payment successful — proceed with rewrite
+          console.log("Payment success:", response);
+          toast({ title: "Payment successful!", description: "Generating your optimized resume..." });
+          await doRewrite();
+        },
+        prefill: {
+          email: user.email || "",
+        },
+        theme: {
+          color: "#6d28d9",
+        },
+        modal: {
+          ondismiss: () => {
+            toast({ title: "Payment cancelled", description: "You can try again anytime.", variant: "destructive" });
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on("payment.failed", (response: any) => {
+        console.error("Payment failed:", response.error);
+        toast({ title: "Payment failed", description: response.error?.description || "Please try again.", variant: "destructive" });
+      });
+      rzp.open();
+    } catch (error: any) {
+      toast({ title: "Payment error", description: error.message, variant: "destructive" });
+    }
+  }, [file, result, user, doRewrite, toast]);
 
   return (
     <div className="min-h-screen bg-background">
