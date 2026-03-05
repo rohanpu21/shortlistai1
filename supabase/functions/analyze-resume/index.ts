@@ -15,7 +15,14 @@ function detectFileType(fileName: string): "pdf" | "docx" | "unknown" {
 }
 
 async function extractTextFromPDF(data: Uint8Array): Promise<string> {
-  const { getDocument } = await import("https://esm.sh/pdfjs-serverless@0.5.0");
+  const mod = await import("https://esm.sh/pdfjs-serverless@0.5.0");
+  const getDocument = mod.getDocument || mod.default?.getDocument || mod.default;
+  if (typeof getDocument !== "function") {
+    // Fallback: use unpdf which wraps pdfjs-serverless
+    const { extractText } = await import("https://esm.sh/unpdf@0.12.1");
+    const { text } = await extractText(data);
+    return text;
+  }
   const doc = await getDocument({ data, useSystemFonts: true }).promise;
   const texts: string[] = [];
   for (let i = 1; i <= doc.numPages; i++) {
