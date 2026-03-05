@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.98.0";
-import pdf from "npm:pdf-parse/lib/pdf-parse.js";
-import mammoth from "npm:mammoth@1.8.0";
+import { getDocument } from "https://esm.sh/pdfjs-serverless@0.5.0";
+import JSZip from "https://esm.sh/jszip@3.10.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,14 +15,40 @@ function detectFileType(fileName: string): "pdf" | "docx" | "unknown" {
   return "unknown";
 }
 
-async function extractText(fileBuffer: Uint8Array, fileType: "pdf" | "docx"): Promise<string> {
-  if (fileType === "pdf") {
-    const result = await pdf(fileBuffer);
-    return result.text;
-  } else {
-    const result = await mammoth.extractRawText({ buffer: fileBuffer });
-    return result.value;
+async function extractTextFromPDF(data: Uint8Array): Promise<string> {
+  const doc = await getDocument({ data, useSystemFonts: true }).promise;
+  const texts: string[] = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items.map((item: any) => item.str).join(" ");
+    texts.push(pageText);
   }
+  return texts.join("\n\n");
+}
+
+async function extractTextFromDOCX(data: Uint8Array): Promise<string> {
+  const zip = await JSZip.loadAsync(data);
+  const docXml = await zip.file("word/document.xml")?.async("string");
+  if (!docXml) throw new Error("Invalid DOCX: no document.xml found");
+  // Strip XML tags and decode common entities
+  const text = docXml
+    .replace(/<w:br[^>]*\/>/gi, "\n")
+    .replace(/<\/w:p>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return text;
+}
+
+async function extractText(data: Uint8Array, fileType: "pdf" | "docx"): Promise<string> {
+  if (fileType === "pdf") return extractTextFromPDF(data);
+  return extractTextFromDOCX(data);
 }
 
 serve(async (req) => {
@@ -76,8 +102,11 @@ serve(async (req) => {
       });
     }
 
-    // Decode base64 to binary and extract text
-    const binaryString = atob(fileBase64);
+    // Strip data URI prefix if present
+    const base64Data = fileBase64.includes(",") ? fileBase64.split(",")[1] : fileBase64;
+
+    // Decode base64 to binary
+    const binaryString = atob(base64Data);
     const bytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {
       bytes[i] = binaryString.charCodeAt(i);
@@ -98,6 +127,8 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    console.log(`Extracted ${resumeText.length} chars from ${fileType} file "${fileName}"`);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
