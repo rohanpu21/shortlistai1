@@ -3,6 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Check, ArrowRight } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const tiers = [
   {
@@ -33,6 +36,53 @@ const tiers = [
 const Pricing = () => {
   const ref = useScrollAnimation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleProAccess = async () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+
+    try {
+      const { data: orderData, error: orderError } = await supabase.functions.invoke("create-razorpay-order", {
+        body: { amount: 9900, currency: "INR", receipt: `rcpt_${user.id}_${Date.now()}` },
+      });
+      if (orderError) throw orderError;
+
+      const { order_id, key_id, amount, currency } = orderData;
+
+      const options = {
+        key: key_id,
+        amount,
+        currency,
+        name: "ShortlistAI",
+        description: "Pro Access – ATS-Optimized Resume",
+        order_id,
+        handler: (response: any) => {
+          console.log("Payment success:", response);
+          toast({ title: "Payment successful!", description: "Redirecting to analyze your resume..." });
+          navigate("/analyze");
+        },
+        prefill: { email: user.email || "" },
+        theme: { color: "#6d28d9" },
+        modal: {
+          ondismiss: () => {
+            toast({ title: "Payment cancelled", description: "You can try again anytime.", variant: "destructive" as const });
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on("payment.failed", (response: any) => {
+        toast({ title: "Payment failed", description: response.error?.description || "Please try again.", variant: "destructive" as const });
+      });
+      rzp.open();
+    } catch (error: any) {
+      toast({ title: "Payment error", description: error.message, variant: "destructive" });
+    }
+  };
 
   return (
     <section id="pricing" className="py-24 bg-grid">
@@ -80,7 +130,7 @@ const Pricing = () => {
                   tier.highlighted ? "" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                 }`}
                 variant={tier.highlighted ? "default" : "secondary"}
-                onClick={() => navigate("/analyze")}
+                onClick={() => tier.highlighted ? handleProAccess() : navigate("/analyze")}
               >
                 {tier.cta}
               </Button>
