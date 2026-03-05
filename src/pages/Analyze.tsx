@@ -112,7 +112,7 @@ const AnalysisReport = ({
       </div>
       <Button onClick={onRewrite} disabled={rewriting} className="rounded-full font-semibold gap-2 whitespace-nowrap" size="lg">
         {rewriting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wand2 className="h-5 w-5" />}
-        {rewriting ? "Rewriting..." : "Fix & Download Resume"}
+        {rewriting ? "Rewriting..." : "Fix & Download — ₹99"}
       </Button>
     </div>
 
