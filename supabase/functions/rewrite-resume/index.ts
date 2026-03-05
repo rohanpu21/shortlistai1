@@ -15,22 +15,27 @@ function detectFileType(fileName: string): "pdf" | "docx" | "unknown" {
 }
 
 async function extractTextFromPDF(data: Uint8Array): Promise<string> {
-  const mod = await import("https://esm.sh/pdfjs-serverless@0.5.0");
-  const getDocument = mod.getDocument || mod.default?.getDocument || mod.default;
-  if (typeof getDocument !== "function") {
+  try {
     const { extractText } = await import("https://esm.sh/unpdf@0.12.1");
-    const { text } = await extractText(data);
-    return text;
+    const result = await extractText(data);
+    if (typeof result === "string") return result;
+    if (result && typeof result.text === "string") return result.text;
+    if (result && Array.isArray(result.pages)) return result.pages.join("\n\n");
+    return String(result);
+  } catch (err) {
+    console.error("unpdf failed, trying pdfjs-serverless:", err);
+    const mod = await import("https://esm.sh/pdfjs-serverless@0.5.0");
+    const getDocument = mod.getDocument || mod.default?.getDocument || mod.default;
+    const doc = await getDocument({ data, useSystemFonts: true }).promise;
+    const texts: string[] = [];
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      const pageText = content.items.map((item: any) => item.str).join(" ");
+      texts.push(pageText);
+    }
+    return texts.join("\n\n");
   }
-  const doc = await getDocument({ data, useSystemFonts: true }).promise;
-  const texts: string[] = [];
-  for (let i = 1; i <= doc.numPages; i++) {
-    const page = await doc.getPage(i);
-    const content = await page.getTextContent();
-    const pageText = content.items.map((item: any) => item.str).join(" ");
-    texts.push(pageText);
-  }
-  return texts.join("\n\n");
 }
 
 async function extractTextFromDOCX(data: Uint8Array): Promise<string> {
