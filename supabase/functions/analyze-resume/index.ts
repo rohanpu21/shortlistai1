@@ -22,9 +22,9 @@ async function extractTextFromPDF(data: Uint8Array): Promise<string> {
     // Handle various return shapes
     if (typeof result === "string") return result;
     if (result && typeof result.text === "string") return result.text;
-    if (result && typeof result.totalPages === "number" && result.text) return String(result.text);
-    // If it's an object with pages
+    if (result && Array.isArray(result.text)) return result.text.join("\n\n");
     if (result && Array.isArray(result.pages)) return result.pages.join("\n\n");
+    return String(result);
     return String(result);
   } catch (err) {
     console.error("unpdf failed, trying pdfjs-serverless:", err);

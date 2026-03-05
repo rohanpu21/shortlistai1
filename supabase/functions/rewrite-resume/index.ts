@@ -20,6 +20,7 @@ async function extractTextFromPDF(data: Uint8Array): Promise<string> {
     const result = await extractText(data);
     if (typeof result === "string") return result;
     if (result && typeof result.text === "string") return result.text;
+    if (result && Array.isArray(result.text)) return result.text.join("\n\n");
     if (result && Array.isArray(result.pages)) return result.pages.join("\n\n");
     return String(result);
   } catch (err) {
