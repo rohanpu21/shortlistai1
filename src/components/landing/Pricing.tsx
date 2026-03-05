@@ -130,7 +130,7 @@ const Pricing = () => {
                   tier.highlighted ? "" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                 }`}
                 variant={tier.highlighted ? "default" : "secondary"}
-                onClick={() => navigate("/analyze")}
+                onClick={() => tier.highlighted ? handleProAccess() : navigate("/analyze")}
               >
                 {tier.cta}
               </Button>
