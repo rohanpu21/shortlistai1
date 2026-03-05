@@ -1,10 +1,29 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.98.0";
+import pdf from "npm:pdf-parse/lib/pdf-parse.js";
+import mammoth from "npm:mammoth@1.8.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+function detectFileType(fileName: string): "pdf" | "docx" | "unknown" {
+  const ext = fileName.toLowerCase().split(".").pop();
+  if (ext === "pdf") return "pdf";
+  if (ext === "docx" || ext === "doc") return "docx";
+  return "unknown";
+}
+
+async function extractText(fileBuffer: Uint8Array, fileType: "pdf" | "docx"): Promise<string> {
+  if (fileType === "pdf") {
+    const result = await pdf(fileBuffer);
+    return result.text;
+  } else {
+    const result = await mammoth.extractRawText({ buffer: fileBuffer });
+    return result.value;
+  }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -12,7 +31,6 @@ serve(async (req) => {
   }
 
   try {
-    // Auth validation
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Missing authorization header" }), {
@@ -35,7 +53,6 @@ serve(async (req) => {
 
     const { fileBase64, fileName, analysis } = await req.json();
 
-    // Input validation
     if (!fileBase64 || typeof fileBase64 !== "string") {
       return new Response(JSON.stringify({ error: "fileBase64 is required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -53,6 +70,36 @@ serve(async (req) => {
     }
     if (fileBase64.length > 28_000_000) {
       return new Response(JSON.stringify({ error: "File too large. Max 20MB." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const fileType = detectFileType(fileName);
+    if (fileType === "unknown") {
+      return new Response(JSON.stringify({ error: "Unsupported file format. Please upload a PDF or DOCX file." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Decode base64 to binary and extract text
+    const binaryString = atob(fileBase64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    let resumeText: string;
+    try {
+      resumeText = await extractText(bytes, fileType);
+    } catch (parseErr) {
+      console.error("Text extraction failed:", parseErr);
+      return new Response(JSON.stringify({ error: "Failed to extract text from file. Please ensure it's a valid PDF or DOCX." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!resumeText || resumeText.trim().length < 20) {
+      return new Response(JSON.stringify({ error: "Could not extract meaningful text from the file. It may be image-based or corrupted." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -129,13 +176,15 @@ Enhancement techniques (apply WITHOUT changing facts):
 - Better organize and structure existing content
 - Fix ATS formatting issues (remove tables, graphics references, etc.)`;
 
-    const userPrompt = `Here is the resume file "${fileName}" as base64:
-${fileBase64}
+    const userPrompt = `Here is the extracted text from the resume file "${fileName}":
+---
+${resumeText}
+---
 
 Here is the ATS analysis feedback:
 ${JSON.stringify(analysis, null, 2)}
 
-Rewrite this resume incorporating all the feedback. Return ONLY the structured JSON.`;
+Rewrite this resume incorporating the feedback. Return ONLY the structured JSON. Remember: do NOT invent any content — only enhance what exists in the resume text above.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
