@@ -159,7 +159,7 @@ const AnalysisReport = ({
         <ul className="space-y-3">
           {result.rewrite_suggestions.map((s, i) => (
             <li key={i} className="bg-accent/5 border border-accent/10 rounded-xl p-4 text-sm text-foreground">
-              <ReactMarkdown>{s}</ReactMarkdown>
+              <ReactMarkdown>{typeof s === "string" ? s : JSON.stringify(s)}</ReactMarkdown>
             </li>
           ))}
         </ul>
