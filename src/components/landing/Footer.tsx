@@ -14,10 +14,10 @@ const Footer = () => (
         </div>
 
         <div className="flex items-center gap-4">
-          <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+          <a href="#" aria-label="Instagram" className="text-muted-foreground hover:text-foreground transition-colors">
             <Instagram className="h-5 w-5" />
           </a>
-          <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+          <a href="#" aria-label="LinkedIn" className="text-muted-foreground hover:text-foreground transition-colors">
             <Linkedin className="h-5 w-5" />
           </a>
         </div>
