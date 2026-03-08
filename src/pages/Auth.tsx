@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowRight, Loader2 } from "lucide-react";
+import { lovable } from "@/integrations/lovable";
 
 const Auth = () => {
   const navigate = useNavigate();
