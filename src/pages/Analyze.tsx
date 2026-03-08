@@ -12,6 +12,7 @@ import { pdf } from "@react-pdf/renderer";
 import ResumePDF, { type ResumeData } from "@/components/ResumePDF";
 import { load } from "@cashfreepayments/cashfree-js";
 import { useCredits } from "@/hooks/useCredits";
+import ProgressOverlay from "@/components/ProgressOverlay";
 
 interface AnalysisResult {
   ats_score: number;
@@ -420,7 +421,11 @@ const Analyze = () => {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-12">
-        {!result ? (
+        {loading ? (
+          <ProgressOverlay mode="analyze" />
+        ) : rewriting ? (
+          <ProgressOverlay mode="rewrite" />
+        ) : !result ? (
           <UploadForm file={file} jd={jd} loading={loading} onFileChange={handleFileChange} onJdChange={setJd} onAnalyze={handleAnalyze} />
         ) : (
           <AnalysisReport result={result} rewriting={rewriting} onRewrite={handleRewrite} onReset={() => { setResult(null); setFile(null); }} credits={credits} isUnlimited={isUnlimited} />
