@@ -24,11 +24,11 @@ const benefits = [
 ];
 
 const Benefits = () => {
-  const ref = useScrollAnimation();
+  const { ref, className: scrollClass } = useScrollAnimation();
 
   return (
     <section id="benefits" className="py-24 bg-card">
-      <div ref={ref} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div ref={ref} className={`max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 ${scrollClass}`}>
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
           Why Students Love ShortlistAI
         </h2>

@@ -14,11 +14,11 @@ const newWay = [
 ];
 
 const ProblemSolution = () => {
-  const ref = useScrollAnimation();
+  const { ref, className: scrollClass } = useScrollAnimation();
 
   return (
     <section className="py-24 bg-grid">
-      <div ref={ref} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div ref={ref} className={`max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 ${scrollClass}`}>
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
           Stop Guessing, Start Getting Interview Calls
         </h2>

@@ -37,7 +37,7 @@ const tiers = [
 ];
 
 const Pricing = () => {
-  const ref = useScrollAnimation();
+  const { ref, className: scrollClass } = useScrollAnimation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -76,7 +76,7 @@ const Pricing = () => {
 
   return (
     <section id="pricing" className="py-24 bg-grid">
-      <div ref={ref} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div ref={ref} className={`max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 ${scrollClass}`}>
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
           Simple, Transparent Pricing
         </h2>

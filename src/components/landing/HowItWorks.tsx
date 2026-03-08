@@ -23,11 +23,11 @@ const steps = [
 ];
 
 const HowItWorks = () => {
-  const ref = useScrollAnimation();
+  const { ref, className: scrollClass } = useScrollAnimation();
 
   return (
     <section id="how-it-works" className="py-24 bg-grid">
-      <div ref={ref} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div ref={ref} className={`max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 ${scrollClass}`}>
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
           How It Works
         </h2>
