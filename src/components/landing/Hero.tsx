@@ -49,11 +49,11 @@ const Hero = () => {
               </div>
               <div className="mt-4 flex items-center gap-2">
                 <FileText className="h-4 w-4 text-destructive/50" />
-                <span className="text-xs text-destructive/60 font-medium">resume_v3_final.pdf</span>
+                <span className="text-xs text-destructive/80 font-medium">resume_v3_final.pdf</span>
               </div>
               <div className="mt-3 text-center">
                 <span className="text-2xl font-extrabold text-destructive">34%</span>
-                <p className="text-[10px] text-destructive/60 font-medium">ATS Score</p>
+                <p className="text-[10px] text-destructive/80 font-medium">ATS Score</p>
               </div>
             </div>
 
@@ -70,11 +70,11 @@ const Hero = () => {
               </div>
               <div className="mt-4 flex items-center gap-2">
                 <FileText className="h-4 w-4 text-accent/50" />
-                <span className="text-xs text-accent/60 font-medium">ShortlistAI Report</span>
+                <span className="text-xs text-accent/80 font-medium">ShortlistAI Report</span>
               </div>
               <div className="mt-3 text-center">
                 <span className="text-2xl font-extrabold text-accent">92%</span>
-                <p className="text-[10px] text-accent/60 font-medium">ATS Score</p>
+                <p className="text-[10px] text-accent/80 font-medium">ATS Score</p>
               </div>
             </div>
           </div>
