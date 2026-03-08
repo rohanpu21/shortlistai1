@@ -145,8 +145,8 @@ serve(async (req) => {
 
     console.log(`Extracted ${resumeText.length} chars from ${fileType} file "${fileName}"`);
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const SARVAM_API_KEY = Deno.env.get("SARVAM_API_KEY");
+    if (!SARVAM_API_KEY) throw new Error("SARVAM_API_KEY is not configured");
 
     const systemPrompt = `You are an expert resume formatter and optimizer. Your job is to ENHANCE the presentation of an existing resume — NOT to add new content.
 
