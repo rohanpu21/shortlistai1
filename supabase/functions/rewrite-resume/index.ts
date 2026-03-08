@@ -145,8 +145,8 @@ serve(async (req) => {
 
     console.log(`Extracted ${resumeText.length} chars from ${fileType} file "${fileName}"`);
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const SARVAM_API_KEY = Deno.env.get("SARVAM_API_KEY");
+    if (!SARVAM_API_KEY) throw new Error("SARVAM_API_KEY is not configured");
 
     const systemPrompt = `You are an expert resume formatter and optimizer. Your job is to ENHANCE the presentation of an existing resume — NOT to add new content.
 
@@ -227,14 +227,14 @@ ${JSON.stringify(analysis, null, 2)}
 
 Rewrite this resume incorporating the feedback. Return ONLY the structured JSON. Remember: do NOT invent any content — only enhance what exists in the resume text above.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.sarvam.ai/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${SARVAM_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5",
+        model: "sarvam-m4",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
