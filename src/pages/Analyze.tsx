@@ -204,13 +204,74 @@ const Analyze = () => {
   const [loading, setLoading] = useState(false);
   const [rewriting, setRewriting] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const { credits, isUnlimited, refetch: refetchCredits } = useCredits();
 
-  // Handle return from Cashfree payment
+  // Handle return from Cashfree payment — add credits
   useEffect(() => {
-    if (searchParams.get("payment") === "success") {
-      toast({ title: "Payment successful!", description: "You now have Pro access. Upload your resume to get started." });
-    }
-  }, [searchParams, toast]);
+    const handlePaymentReturn = async () => {
+      const paymentType = searchParams.get("payment");
+      if (!paymentType || !user) return;
+
+      if (paymentType === "credits") {
+        try {
+          await supabase.functions.invoke("add-credits", {
+            body: { credits: 99 },
+          });
+          await refetchCredits();
+          toast({ title: "Payment successful!", description: "99 credits added to your account." });
+        } catch (e: any) {
+          toast({ title: "Error adding credits", description: e.message, variant: "destructive" });
+        }
+      }
+
+      if (paymentType === "rewrite") {
+        // Legacy rewrite payment flow — add credits then do rewrite
+        try {
+          await supabase.functions.invoke("add-credits", {
+            body: { credits: 99 },
+          });
+          await refetchCredits();
+        } catch {}
+
+        const pending = sessionStorage.getItem("pendingRewrite");
+        if (!pending) return;
+        sessionStorage.removeItem("pendingRewrite");
+        setRewriting(true);
+
+        try {
+          const { fileBase64: base64, fileName, analysis } = JSON.parse(pending);
+          toast({ title: "Payment successful!", description: "Generating your optimized resume..." });
+
+          // Deduct credits
+          const { data: deductResult } = await supabase.rpc("deduct_credits", { p_user_id: user.id, p_amount: 49 });
+
+          const { data, error } = await supabase.functions.invoke("rewrite-resume", {
+            body: { fileBase64: base64, fileName, analysis },
+          });
+          if (error) throw error;
+
+          const resumeData: ResumeData = data.resumeData;
+          const blob = await pdf(<ResumePDF data={resumeData} />).toBlob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${resumeData.name?.replace(/\s+/g, "_") || "resume"}_ATS_Optimized.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          toast({ title: "Resume downloaded!", description: "Your ATS-optimized resume has been saved." });
+          await refetchCredits();
+        } catch (error: any) {
+          toast({ title: "Rewrite failed", description: error.message, variant: "destructive" });
+        } finally {
+          setRewriting(false);
+        }
+      }
+    };
+    handlePaymentReturn();
+  }, [searchParams, toast, user, refetchCredits]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -270,20 +331,58 @@ const Analyze = () => {
     }
   };
 
-  const doRewrite = useCallback(async () => {
-    if (!file || !result) return;
+  const handleRewrite = useCallback(async () => {
+    if (!file || !result || !user) return;
+    const hasEnoughCredits = isUnlimited || credits >= 49;
+
+    if (!hasEnoughCredits) {
+      // Redirect to buy credits via Cashfree
+      try {
+        const { data, error } = await supabase.functions.invoke("create-cashfree-order", {
+          body: {
+            amount: 99,
+            currency: "INR",
+            customer_email: user.email || "",
+            customer_id: user.id,
+            return_url: `${window.location.origin}/analyze?payment=rewrite`,
+          },
+        });
+        if (error) throw error;
+
+        sessionStorage.setItem("pendingRewrite", JSON.stringify({
+          fileBase64: fileBase64 || await readFileAsBase64(file),
+          fileName: file.name,
+          analysis: result,
+        }));
+
+        const cashfree = await load({ mode: "production" });
+        cashfree.checkout({
+          paymentSessionId: data.payment_session_id,
+          redirectTarget: "_self",
+        });
+      } catch (error: any) {
+        toast({ title: "Payment error", description: error.message, variant: "destructive" });
+      }
+      return;
+    }
+
+    // Has credits — deduct and rewrite
     setRewriting(true);
-
     try {
-      const base64 = fileBase64 || (await readFileAsBase64(file));
+      const { data: deductOk } = await supabase.rpc("deduct_credits", { p_user_id: user.id, p_amount: 49 });
+      if (!deductOk) {
+        toast({ title: "Insufficient credits", description: "You need 49 credits to fix your resume.", variant: "destructive" });
+        setRewriting(false);
+        return;
+      }
 
+      const base64 = fileBase64 || (await readFileAsBase64(file));
       const { data, error } = await supabase.functions.invoke("rewrite-resume", {
         body: { fileBase64: base64, fileName: file.name, analysis: result },
       });
       if (error) throw error;
 
       const resumeData: ResumeData = data.resumeData;
-
       const blob = await pdf(<ResumePDF data={resumeData} />).toBlob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -295,88 +394,13 @@ const Analyze = () => {
       URL.revokeObjectURL(url);
 
       toast({ title: "Resume downloaded!", description: "Your ATS-optimized resume has been saved." });
+      await refetchCredits();
     } catch (error: any) {
       toast({ title: "Rewrite failed", description: error.message, variant: "destructive" });
     } finally {
       setRewriting(false);
     }
-  }, [file, fileBase64, result, toast]);
-
-  const handleRewrite = useCallback(async () => {
-    if (!file || !result || !user) return;
-
-    try {
-      const { data, error } = await supabase.functions.invoke("create-cashfree-order", {
-        body: {
-          amount: 99,
-          currency: "INR",
-          customer_email: user.email || "",
-          customer_id: user.id,
-          return_url: `${window.location.origin}/analyze?payment=rewrite`,
-        },
-      });
-      if (error) throw error;
-
-      // Store rewrite context for after payment return
-      sessionStorage.setItem("pendingRewrite", JSON.stringify({
-        fileBase64: fileBase64 || await readFileAsBase64(file),
-        fileName: file.name,
-        analysis: result,
-      }));
-
-      const cashfree = await load({ mode: "production" });
-
-      cashfree.checkout({
-        paymentSessionId: data.payment_session_id,
-        redirectTarget: "_self",
-      });
-    } catch (error: any) {
-      toast({ title: "Payment error", description: error.message, variant: "destructive" });
-    }
-  }, [file, result, user, fileBase64, toast]);
-
-  // Handle return from rewrite payment
-  useEffect(() => {
-    const handleRewriteReturn = async () => {
-      if (searchParams.get("payment") !== "rewrite") return;
-      const pending = sessionStorage.getItem("pendingRewrite");
-      if (!pending) return;
-
-      sessionStorage.removeItem("pendingRewrite");
-      setRewriting(true);
-
-      try {
-        const { fileBase64: base64, fileName, analysis } = JSON.parse(pending);
-
-        toast({ title: "Payment successful!", description: "Generating your optimized resume..." });
-
-        const { data, error } = await supabase.functions.invoke("rewrite-resume", {
-          body: { fileBase64: base64, fileName, analysis },
-        });
-        if (error) throw error;
-
-        const resumeData: ResumeData = data.resumeData;
-
-        const blob = await pdf(<ResumePDF data={resumeData} />).toBlob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${resumeData.name?.replace(/\s+/g, "_") || "resume"}_ATS_Optimized.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        toast({ title: "Resume downloaded!", description: "Your ATS-optimized resume has been saved." });
-      } catch (error: any) {
-        toast({ title: "Rewrite failed", description: error.message, variant: "destructive" });
-      } finally {
-        setRewriting(false);
-      }
-    };
-
-    handleRewriteReturn();
-  }, [searchParams, toast]);
+  }, [file, result, user, isUnlimited, credits, fileBase64, toast, refetchCredits]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -384,6 +408,10 @@ const Analyze = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           <a href="/" className="text-xl font-extrabold text-primary tracking-tight">ShortlistAI</a>
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground mr-2">
+              <Coins className="h-4 w-4 text-primary" />
+              <span className="font-medium">{isUnlimited ? "∞" : credits}</span>
+            </div>
             <Button variant="ghost" size="sm" onClick={() => navigate("/profile")} className="gap-2">
               <User className="h-4 w-4" /> Profile
             </Button>
@@ -395,7 +423,7 @@ const Analyze = () => {
         {!result ? (
           <UploadForm file={file} jd={jd} loading={loading} onFileChange={handleFileChange} onJdChange={setJd} onAnalyze={handleAnalyze} />
         ) : (
-          <AnalysisReport result={result} rewriting={rewriting} onRewrite={handleRewrite} onReset={() => { setResult(null); setFile(null); }} />
+          <AnalysisReport result={result} rewriting={rewriting} onRewrite={handleRewrite} onReset={() => { setResult(null); setFile(null); }} credits={credits} isUnlimited={isUnlimited} />
         )}
       </main>
     </div>
