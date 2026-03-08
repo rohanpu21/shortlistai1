@@ -189,7 +189,8 @@ const AnalysisReport = ({
       </div>
     )}
   </div>
-);
+  );
+};
 
 /* ── Main Page ── */
 const Analyze = () => {
