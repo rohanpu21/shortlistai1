@@ -4,13 +4,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { lazy, Suspense } from "react";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Analyze from "./pages/Analyze";
-import Profile from "./pages/Profile";
-import Privacy from "./pages/Privacy";
-import Terms from "./pages/Terms";
-import NotFound from "./pages/NotFound";
+
+const Auth = lazy(() => import("./pages/Auth"));
+const Analyze = lazy(() => import("./pages/Analyze"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
