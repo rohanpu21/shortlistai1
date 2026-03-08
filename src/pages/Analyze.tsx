@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import SpeedometerGauge from "@/components/SpeedometerGauge";
-import { Upload, FileText, Loader2, ArrowLeft, CheckCircle, AlertTriangle, Lightbulb, ListChecks, User, Wand2 } from "lucide-react";
+import { Upload, FileText, Loader2, ArrowLeft, CheckCircle, AlertTriangle, Lightbulb, ListChecks, User, Wand2, Coins } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { pdf } from "@react-pdf/renderer";
 import ResumePDF, { type ResumeData } from "@/components/ResumePDF";
 import { load } from "@cashfreepayments/cashfree-js";
+import { useCredits } from "@/hooks/useCredits";
 
 interface AnalysisResult {
   ats_score: number;
