@@ -196,14 +196,14 @@ ${resumeText}
       userPrompt += `\n\nNo specific job description provided. Auto-detect the candidate's domain from the resume and analyze for relevant roles in that field within the Indian job market.`;
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.sarvam.ai/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${SARVAM_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5",
+        model: "sarvam-m4",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
