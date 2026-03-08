@@ -1,15 +1,16 @@
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import SpeedometerGauge from "@/components/SpeedometerGauge";
-import { Upload, FileText, Loader2, ArrowLeft, CheckCircle, AlertTriangle, Lightbulb, ListChecks, User, Download, Wand2 } from "lucide-react";
+import { Upload, FileText, Loader2, ArrowLeft, CheckCircle, AlertTriangle, Lightbulb, ListChecks, User, Wand2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { pdf } from "@react-pdf/renderer";
 import ResumePDF, { type ResumeData } from "@/components/ResumePDF";
+import { load } from "@cashfreepayments/cashfree-js";
 
 interface AnalysisResult {
   ats_score: number;
@@ -23,19 +24,11 @@ interface AnalysisResult {
 
 /* ── Upload Form ── */
 const UploadForm = ({
-  file,
-  jd,
-  loading,
-  onFileChange,
-  onJdChange,
-  onAnalyze,
+  file, jd, loading, onFileChange, onJdChange, onAnalyze,
 }: {
-  file: File | null;
-  jd: string;
-  loading: boolean;
+  file: File | null; jd: string; loading: boolean;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onJdChange: (v: string) => void;
-  onAnalyze: () => void;
+  onJdChange: (v: string) => void; onAnalyze: () => void;
 }) => (
   <div className="space-y-8">
     <div className="text-center">
@@ -75,15 +68,9 @@ const UploadForm = ({
 
 /* ── Analysis Report ── */
 const AnalysisReport = ({
-  result,
-  rewriting,
-  onRewrite,
-  onReset,
+  result, rewriting, onRewrite, onReset,
 }: {
-  result: AnalysisResult;
-  rewriting: boolean;
-  onRewrite: () => void;
-  onReset: () => void;
+  result: AnalysisResult; rewriting: boolean; onRewrite: () => void; onReset: () => void;
 }) => (
   <div className="space-y-10">
     <div className="flex items-center gap-4">
@@ -93,7 +80,6 @@ const AnalysisReport = ({
       <h1 className="text-2xl font-extrabold text-foreground">Your ATS Report</h1>
     </div>
 
-    {/* Score */}
     <div className="bg-card rounded-2xl border border-border p-8 flex flex-col items-center">
       <SpeedometerGauge score={result.ats_score} />
       {result.detected_domain && (
@@ -104,7 +90,6 @@ const AnalysisReport = ({
       <p className="text-sm text-muted-foreground mt-4 text-center max-w-md">{result.summary}</p>
     </div>
 
-    {/* Fix & Download CTA */}
     <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div>
         <h2 className="text-lg font-bold text-foreground">Want an ATS-optimized resume?</h2>
@@ -116,7 +101,6 @@ const AnalysisReport = ({
       </Button>
     </div>
 
-    {/* Keyword gaps */}
     {result.keyword_gaps.length > 0 && (
       <div className="bg-card rounded-2xl border border-border p-6">
         <div className="flex items-center gap-2 mb-4">
@@ -131,7 +115,6 @@ const AnalysisReport = ({
       </div>
     )}
 
-    {/* Formatting issues */}
     {result.formatting_issues.length > 0 && (
       <div className="bg-card rounded-2xl border border-border p-6">
         <div className="flex items-center gap-2 mb-4">
@@ -148,7 +131,6 @@ const AnalysisReport = ({
       </div>
     )}
 
-    {/* Rewrite suggestions */}
     {result.rewrite_suggestions.length > 0 && (
       <div className="bg-card rounded-2xl border border-border p-6">
         <div className="flex items-center gap-2 mb-4">
@@ -165,7 +147,6 @@ const AnalysisReport = ({
       </div>
     )}
 
-    {/* Section feedback */}
     {result.section_feedback.length > 0 && (
       <div className="bg-card rounded-2xl border border-border p-6">
         <div className="flex items-center gap-2 mb-4">
@@ -197,12 +178,20 @@ const Analyze = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [file, setFile] = useState<File | null>(null);
   const [fileBase64, setFileBase64] = useState<string>("");
   const [jd, setJd] = useState("");
   const [loading, setLoading] = useState(false);
   const [rewriting, setRewriting] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+
+  // Handle return from Cashfree payment
+  useEffect(() => {
+    if (searchParams.get("payment") === "success") {
+      toast({ title: "Payment successful!", description: "You now have Pro access. Upload your resume to get started." });
+    }
+  }, [searchParams, toast]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -298,51 +287,77 @@ const Analyze = () => {
     if (!file || !result || !user) return;
 
     try {
-      // Step 1: Create Razorpay order via edge function
-      const { data: orderData, error: orderError } = await supabase.functions.invoke("create-razorpay-order", {
-        body: { amount: 9900, currency: "INR", receipt: `rcpt_${user.id}_${Date.now()}` },
+      const { data, error } = await supabase.functions.invoke("create-cashfree-order", {
+        body: {
+          amount: 99,
+          currency: "INR",
+          customer_email: user.email || "",
+          customer_id: user.id,
+          return_url: `${window.location.origin}/analyze?payment=rewrite`,
+        },
       });
-      if (orderError) throw orderError;
+      if (error) throw error;
 
-      const { order_id, key_id, amount, currency } = orderData;
+      // Store rewrite context for after payment return
+      sessionStorage.setItem("pendingRewrite", JSON.stringify({
+        fileBase64: fileBase64 || await readFileAsBase64(file),
+        fileName: file.name,
+        analysis: result,
+      }));
 
-      // Step 2: Open Razorpay checkout
-      const options = {
-        key: key_id,
-        amount,
-        currency,
-        name: "ShortlistAI",
-        description: "ATS-Optimized Resume – Fix & Download",
-        order_id,
-        handler: async (response: any) => {
-          // Payment successful — proceed with rewrite
-          console.log("Payment success:", response);
-          toast({ title: "Payment successful!", description: "Generating your optimized resume..." });
-          await doRewrite();
-        },
-        prefill: {
-          email: user.email || "",
-        },
-        theme: {
-          color: "#6d28d9",
-        },
-        modal: {
-          ondismiss: () => {
-            toast({ title: "Payment cancelled", description: "You can try again anytime.", variant: "destructive" });
-          },
-        },
-      };
+      const cashfree = await load({ mode: "production" });
 
-      const rzp = new (window as any).Razorpay(options);
-      rzp.on("payment.failed", (response: any) => {
-        console.error("Payment failed:", response.error);
-        toast({ title: "Payment failed", description: response.error?.description || "Please try again.", variant: "destructive" });
+      cashfree.checkout({
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: "_self",
       });
-      rzp.open();
     } catch (error: any) {
       toast({ title: "Payment error", description: error.message, variant: "destructive" });
     }
-  }, [file, result, user, doRewrite, toast]);
+  }, [file, result, user, fileBase64, toast]);
+
+  // Handle return from rewrite payment
+  useEffect(() => {
+    const handleRewriteReturn = async () => {
+      if (searchParams.get("payment") !== "rewrite") return;
+      const pending = sessionStorage.getItem("pendingRewrite");
+      if (!pending) return;
+
+      sessionStorage.removeItem("pendingRewrite");
+      setRewriting(true);
+
+      try {
+        const { fileBase64: base64, fileName, analysis } = JSON.parse(pending);
+
+        toast({ title: "Payment successful!", description: "Generating your optimized resume..." });
+
+        const { data, error } = await supabase.functions.invoke("rewrite-resume", {
+          body: { fileBase64: base64, fileName, analysis },
+        });
+        if (error) throw error;
+
+        const resumeData: ResumeData = data.resumeData;
+
+        const blob = await pdf(<ResumePDF data={resumeData} />).toBlob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${resumeData.name?.replace(/\s+/g, "_") || "resume"}_ATS_Optimized.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast({ title: "Resume downloaded!", description: "Your ATS-optimized resume has been saved." });
+      } catch (error: any) {
+        toast({ title: "Rewrite failed", description: error.message, variant: "destructive" });
+      } finally {
+        setRewriting(false);
+      }
+    };
+
+    handleRewriteReturn();
+  }, [searchParams, toast]);
 
   return (
     <div className="min-h-screen bg-background">
