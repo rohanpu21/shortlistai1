@@ -69,10 +69,14 @@ const UploadForm = ({
 
 /* ── Analysis Report ── */
 const AnalysisReport = ({
-  result, rewriting, onRewrite, onReset,
+  result, rewriting, onRewrite, onReset, credits, isUnlimited,
 }: {
   result: AnalysisResult; rewriting: boolean; onRewrite: () => void; onReset: () => void;
-}) => (
+  credits: number; isUnlimited: boolean;
+}) => {
+  const hasEnoughCredits = isUnlimited || credits >= 49;
+  
+  return (
   <div className="space-y-10">
     <div className="flex items-center gap-4">
       <Button variant="ghost" onClick={onReset} className="gap-2">
@@ -95,11 +99,24 @@ const AnalysisReport = ({
       <div>
         <h2 className="text-lg font-bold text-foreground">Want an ATS-optimized resume?</h2>
         <p className="text-sm text-muted-foreground">AI will rewrite your resume with all fixes applied and generate a downloadable PDF.</p>
+        <div className="flex items-center gap-2 mt-2">
+          <Coins className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium text-foreground">
+            {isUnlimited ? "Unlimited credits" : `${credits} credits`}
+          </span>
+          <span className="text-xs text-muted-foreground">• 49 credits per fix</span>
+        </div>
       </div>
-      <Button onClick={onRewrite} disabled={rewriting} className="rounded-full font-semibold gap-2 whitespace-nowrap" size="lg">
-        {rewriting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wand2 className="h-5 w-5" />}
-        {rewriting ? "Rewriting..." : "Fix & Download — ₹99"}
-      </Button>
+      {hasEnoughCredits ? (
+        <Button onClick={onRewrite} disabled={rewriting} className="rounded-full font-semibold gap-2 whitespace-nowrap" size="lg">
+          {rewriting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wand2 className="h-5 w-5" />}
+          {rewriting ? "Rewriting..." : "Fix & Download (49 credits)"}
+        </Button>
+      ) : (
+        <Button onClick={onRewrite} className="rounded-full font-semibold gap-2 whitespace-nowrap" size="lg">
+          Buy 99 Credits — ₹99
+        </Button>
+      )}
     </div>
 
     {result.keyword_gaps.length > 0 && (
