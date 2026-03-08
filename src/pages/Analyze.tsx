@@ -12,6 +12,7 @@ import { pdf } from "@react-pdf/renderer";
 import ResumePDF, { type ResumeData } from "@/components/ResumePDF";
 import { load } from "@cashfreepayments/cashfree-js";
 import { useCredits } from "@/hooks/useCredits";
+import ProgressOverlay from "@/components/ProgressOverlay";
 
 interface AnalysisResult {
   ats_score: number;
