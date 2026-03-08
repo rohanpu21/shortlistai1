@@ -1,17 +1,19 @@
+import { lazy, Suspense } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
-import SocialProof from "@/components/landing/SocialProof";
-import ProblemSolution from "@/components/landing/ProblemSolution";
-import Benefits from "@/components/landing/Benefits";
-import HowItWorks from "@/components/landing/HowItWorks";
-import Demo from "@/components/landing/Demo";
-import Pricing from "@/components/landing/Pricing";
-import FAQ from "@/components/landing/FAQ";
-import FinalCTA from "@/components/landing/FinalCTA";
-import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+const SocialProof = lazy(() => import("@/components/landing/SocialProof"));
+const ProblemSolution = lazy(() => import("@/components/landing/ProblemSolution"));
+const Benefits = lazy(() => import("@/components/landing/Benefits"));
+const HowItWorks = lazy(() => import("@/components/landing/HowItWorks"));
+const Demo = lazy(() => import("@/components/landing/Demo"));
+const Pricing = lazy(() => import("@/components/landing/Pricing"));
+const FAQ = lazy(() => import("@/components/landing/FAQ"));
+const FinalCTA = lazy(() => import("@/components/landing/FinalCTA"));
+const Footer = lazy(() => import("@/components/landing/Footer"));
 
 const InlineCTA = ({ text = "Analyze My Resume Now" }: { text?: string }) => {
   const navigate = useNavigate();
@@ -34,18 +36,22 @@ const Index = () => {
       <Navbar />
       <main>
         <Hero />
-        <SocialProof />
-        <ProblemSolution />
-        <InlineCTA />
-        <Benefits />
-        <HowItWorks />
-        <Demo />
-        <InlineCTA text="Check ATS Score Free" />
-        <Pricing />
-        <FAQ />
-        <FinalCTA />
+        <Suspense fallback={null}>
+          <SocialProof />
+          <ProblemSolution />
+          <InlineCTA />
+          <Benefits />
+          <HowItWorks />
+          <Demo />
+          <InlineCTA text="Check ATS Score Free" />
+          <Pricing />
+          <FAQ />
+          <FinalCTA />
+        </Suspense>
       </main>
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 };
