@@ -203,7 +203,7 @@ ${resumeText}
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "sarvam-m4",
+        model: "sarvam-105b",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },

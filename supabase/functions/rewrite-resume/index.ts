@@ -234,7 +234,7 @@ Rewrite this resume incorporating the feedback. Return ONLY the structured JSON.
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "sarvam-m4",
+        model: "sarvam-105b",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
