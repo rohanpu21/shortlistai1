@@ -14,13 +14,17 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already logged in
+  // Redirect if already logged in or when auth state changes
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) navigate("/analyze", { replace: true });
-    };
-    checkUser();
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) navigate("/analyze", { replace: true });
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
   const [form, setForm] = useState({
     email: "",
