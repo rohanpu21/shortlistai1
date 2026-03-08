@@ -7,12 +7,12 @@ export function useScrollAnimation<T extends HTMLElement = HTMLDivElement>() {
     const el = ref.current;
     if (!el) return;
 
-    el.classList.add("scroll-fade-in");
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          el.classList.add("is-visible");
+          requestAnimationFrame(() => {
+            el.classList.add("is-visible");
+          });
           observer.unobserve(el);
         }
       },
@@ -23,5 +23,5 @@ export function useScrollAnimation<T extends HTMLElement = HTMLDivElement>() {
     return () => observer.disconnect();
   }, []);
 
-  return ref;
+  return { ref, className: "scroll-fade-in" };
 }

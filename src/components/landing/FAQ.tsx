@@ -26,11 +26,11 @@ const faqs = [
 ];
 
 const FAQ = () => {
-  const ref = useScrollAnimation();
+  const { ref, className: scrollClass } = useScrollAnimation();
 
   return (
     <section id="faq" className="py-24 bg-card">
-      <div ref={ref} className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div ref={ref} className={`max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 ${scrollClass}`}>
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
           Frequently Asked Questions
         </h2>
